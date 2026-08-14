@@ -1,11 +1,16 @@
 from rest_framework import generics, permissions
 from borrowings.models import Borrowing
-from borrowings.serializers import BorrowingSerializer
+from borrowings.serializers import BorrowingSerializer, BorrowingCreateSerializer
 
 
-class BorrowingListView(generics.ListAPIView):
-    serializer_class = BorrowingSerializer
+class BorrowingListView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return BorrowingCreateSerializer
+        return BorrowingSerializer
+
 
     def get_queryset(self):
         queryset = Borrowing.objects.all()
