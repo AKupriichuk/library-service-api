@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from borrowings.models import Borrowing
 from books.serializers import BookSerializer
 from borrowings.models import Borrowing
+from payments.services import create_stripe_session
 
 
 class BorrowingSerializer(serializers.ModelSerializer):
@@ -26,4 +26,6 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         book = validated_data["book"]
         book.inventory -= 1
         book.save()
-        return Borrowing.objects.create(user=self.context["request"].user, **validated_data)
+        borrowing = Borrowing.objects.create(user=self.context["request"].user, **validated_data)
+        create_stripe_session(borrowing)
+        return borrowing
