@@ -2,6 +2,7 @@ from rest_framework import serializers
 from books.serializers import BookSerializer
 from borrowings.models import Borrowing
 from payments.services import create_stripe_session
+from notifications.services import send_telegram_message
 
 
 class BorrowingSerializer(serializers.ModelSerializer):
@@ -28,4 +29,12 @@ class BorrowingCreateSerializer(serializers.ModelSerializer):
         book.save()
         borrowing = Borrowing.objects.create(user=self.context["request"].user, **validated_data)
         create_stripe_session(borrowing)
+
+        send_telegram_message(
+            f"New borrowing created!\n"
+            f"Book: {book.title}\n"
+            f"User: {borrowing.user.email}\n"
+            f"Expected return: {borrowing.expected_return_date}"
+        )
+
         return borrowing
