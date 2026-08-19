@@ -141,3 +141,5 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
+
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
