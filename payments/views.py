@@ -38,9 +38,13 @@ class PaymentSuccessView(APIView):
             payment = Payment.objects.get(session_id=session_id)
             payment.status = Payment.Status.PAID
             payment.save()
-            return Response({"detail": "Payment successful."}, status=status.HTTP_200_OK)
+            return Response(
+                {"detail": "Payment successful."}, status=status.HTTP_200_OK
+            )
 
-        return Response({"detail": "Payment not completed."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"detail": "Payment not completed."}, status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class PaymentCancelView(APIView):
@@ -48,5 +52,10 @@ class PaymentCancelView(APIView):
 
     def get(self, request):
         return Response(
-            {"detail": "Payment was cancelled. You can complete it within 24 hours using the same session."},
+            {
+                "detail": (
+                    "Payment was cancelled. You can complete it within "
+                    "24 hours using the same session."
+                )
+            },
         )

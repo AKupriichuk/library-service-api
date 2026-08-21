@@ -1,5 +1,10 @@
 from django.urls import path
-from payments.views import PaymentListView, PaymentDetailView, PaymentSuccessView, PaymentCancelView
+from payments.views import (
+    PaymentListView,
+    PaymentDetailView,
+    PaymentSuccessView,
+    PaymentCancelView,
+)
 
 urlpatterns = [
     path("", PaymentListView.as_view(), name="payment-list"),

@@ -2,6 +2,7 @@ from datetime import date, timedelta
 from decimal import Decimal
 from unittest.mock import patch
 
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
@@ -9,6 +10,29 @@ from rest_framework import status
 from books.models import Book
 from borrowings.models import Borrowing
 from users.models import User
+
+
+class BorrowingModelTests(TestCase):
+    def setUp(self):
+        self.book = Book.objects.create(
+            title="1984",
+            author="George Orwell",
+            cover=Book.Cover.HARD,
+            inventory=5,
+            daily_fee=Decimal("1.50"),
+        )
+        self.user = User.objects.create_user(
+            email="user@example.com", password="pass12345"
+        )
+
+    def test_expected_return_date_before_borrow_date_is_rejected(self):
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Borrowing.objects.create(
+                    book=self.book,
+                    user=self.user,
+                    expected_return_date=date.today() - timedelta(days=1),
+                )
 
 
 class BorrowingApiTests(TestCase):

@@ -39,6 +39,23 @@ class OverdueBorrowingsTaskTests(TestCase):
             email="user@example.com", password="pass12345"
         )
 
+    def _make_overdue_borrowing(self, days_overdue, actual_return_date=None):
+        # borrow_date is auto_now_add, so it can't be backdated on create().
+        # Create with valid (non-overdue) dates first, then push both dates
+        # into the past together in a single UPDATE so the CheckConstraint
+        # (expected_return_date >= borrow_date) still holds.
+        borrowing = Borrowing.objects.create(
+            book=self.book,
+            user=self.user,
+            expected_return_date=date.today(),
+        )
+        Borrowing.objects.filter(pk=borrowing.pk).update(
+            borrow_date=date.today() - timedelta(days=days_overdue + 5),
+            expected_return_date=date.today() - timedelta(days=days_overdue),
+            actual_return_date=actual_return_date,
+        )
+        return Borrowing.objects.get(pk=borrowing.pk)
+
     @patch("notifications.tasks.send_telegram_message")
     def test_sends_no_overdue_message_when_nothing_overdue(self, mock_send):
         Borrowing.objects.create(
@@ -53,16 +70,8 @@ class OverdueBorrowingsTaskTests(TestCase):
 
     @patch("notifications.tasks.send_telegram_message")
     def test_sends_message_for_each_overdue_borrowing(self, mock_send):
-        Borrowing.objects.create(
-            book=self.book,
-            user=self.user,
-            expected_return_date=date.today() - timedelta(days=1),
-        )
-        Borrowing.objects.create(
-            book=self.book,
-            user=self.user,
-            expected_return_date=date.today() - timedelta(days=3),
-        )
+        self._make_overdue_borrowing(days_overdue=1)
+        self._make_overdue_borrowing(days_overdue=3)
 
         check_overdue_borrowings()
 
@@ -70,12 +79,7 @@ class OverdueBorrowingsTaskTests(TestCase):
 
     @patch("notifications.tasks.send_telegram_message")
     def test_does_not_count_returned_borrowing_as_overdue(self, mock_send):
-        Borrowing.objects.create(
-            book=self.book,
-            user=self.user,
-            expected_return_date=date.today() - timedelta(days=1),
-            actual_return_date=date.today(),
-        )
+        self._make_overdue_borrowing(days_overdue=1, actual_return_date=date.today())
 
         check_overdue_borrowings()
 

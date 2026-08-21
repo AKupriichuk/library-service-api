@@ -11,16 +11,18 @@ def create_stripe_session(borrowing):
 
     session = stripe.checkout.Session.create(
         payment_method_types=["card"],
-        line_items=[{
-            "price_data": {
-                "currency": "usd",
-                "product_data": {"name": f"Borrowing of {borrowing.book.title}"},
-                "unit_amount": int(money_to_pay * 100),
-            },
-            "quantity": 1,
-        }],
+        line_items=[
+            {
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {"name": f"Borrowing of {borrowing.book.title}"},
+                    "unit_amount": int(money_to_pay * 100),
+                },
+                "quantity": 1,
+            }
+        ],
         mode="payment",
-        success_url="http://127.0.0.1:8000/payments/success/",
+        success_url="http://127.0.0.1:8000/payments/success/?session_id={CHECKOUT_SESSION_ID}",
         cancel_url="http://127.0.0.1:8000/payments/cancel/",
     )
 

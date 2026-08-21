@@ -15,7 +15,6 @@ class BorrowingListView(generics.ListCreateAPIView):
             return BorrowingCreateSerializer
         return BorrowingSerializer
 
-
     def get_queryset(self):
         queryset = Borrowing.objects.all()
         user = self.request.user
@@ -61,5 +60,6 @@ class BorrowingReturnView(APIView):
         borrowing.book.inventory += 1
         borrowing.book.save()
 
-        return Response({"detail": "Borrowing returned successfully."}, status=status.HTTP_200_OK)
-
+        return Response(
+            {"detail": "Borrowing returned successfully."}, status=status.HTTP_200_OK
+        )

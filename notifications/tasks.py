@@ -23,4 +23,3 @@ def check_overdue_borrowings():
             f"User: {borrowing.user.email}\n"
             f"Expected return: {borrowing.expected_return_date}"
         )
-        
